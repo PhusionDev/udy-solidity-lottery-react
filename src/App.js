@@ -5,7 +5,7 @@ import web3 from './web3';
 import lottery from './lottery';
 
 class App extends React.Component {
-  state = { manager: '', players: [], balance: '', value: '' }; // ES2016 refactor
+  state = { manager: '', players: [], balance: '', value: '', message: '' }; // ES2016 refactor
 
   async componentDidMount() {
     const manager = await lottery.methods.manager().call();
@@ -18,18 +18,21 @@ class App extends React.Component {
   onSubmit = async (event) => {
     event.preventDefault();
     const accounts = await web3.eth.getAccounts();
-    await lottery.methods
-      .enter()
-      .send({
-        from: accounts[0],
-        value: web3.utils.toWei(this.state.value, 'ether'),
-      });
+
+    this.setState({ message: 'Waiting on transaction success...' });
+
+    await lottery.methods.enter().send({
+      from: accounts[0],
+      value: web3.utils.toWei(this.state.value, 'ether'),
+    });
+
+    this.setState({ message: 'You have been entered!' });
   };
 
   render() {
     // web3.eth.getAccounts().then(console.log);
     return (
-      <div>
+      <div className="container">
         <h2>Lottery Contract</h2>
         <p>
           This contract is managed by {this.state.manager}. There are currently{' '}
@@ -51,6 +54,10 @@ class App extends React.Component {
 
           <button>Enter</button>
         </form>
+
+        <hr />
+
+        <h1>{this.state.message}</h1>
       </div>
     );
   }
